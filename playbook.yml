@@ -1,0 +1,29 @@
+---
+- name: install docker module using pip3
+  hosts: all
+  roles:
+    - geerlingguy.pip
+
+- name: start serving redmine on nodes
+  hosts: all
+  tasks:
+    - name: create env file from template
+      ansible.builtin.template:
+        src: templates/redmine.env.j2
+        dest: "{{ redmine_container_env_path }}"
+
+    - name: run docker container
+      docker_container:
+        name: redmine_app
+        image: redmine:latest
+        published_ports:
+          - 80:3000
+        restart_policy: always
+        detach: true
+        env_file: "{{ redmine_container_env_path }}"
+
+- hosts: webservers
+  roles:
+    - role: datadog.datadog
+      become: true
+    
