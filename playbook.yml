@@ -3,10 +3,6 @@
   hosts: all
   roles:
     - role: geerlingguy.pip
-      vars:
-        pip_install_packages:
-          - name: docker
-            extra_args: --break-system-packages
       become: true
 
 - name: start serving redmine on nodes
