@@ -2,7 +2,12 @@
 - name: install docker module using pip3
   hosts: all
   roles:
-    - geerlingguy.pip
+    - role: geerlingguy.pip
+      vars:
+        pip_install_packages:
+          - name: docker
+            extra_args: --break-system-packages
+      become: true
 
 - name: start serving redmine on nodes
   hosts: all
@@ -11,19 +16,20 @@
       ansible.builtin.template:
         src: templates/redmine.env.j2
         dest: "{{ redmine_container_env_path }}"
+      become: true
 
     - name: run docker container
-      docker_container:
+      community.docker.docker_container:
         name: redmine_app
-        image: redmine:latest
+        image: redmine
         published_ports:
           - 80:3000
         restart_policy: always
         detach: true
         env_file: "{{ redmine_container_env_path }}"
+      become: true
 
 - hosts: webservers
   roles:
     - role: datadog.datadog
       become: true
-    
